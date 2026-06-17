@@ -1,133 +1,207 @@
-```html
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inventario PDA - Expedición v4</title>
-<link rel="stylesheet" href="css/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111111">
+  <title>Inventario PDA Expedición</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<div class="app">
-  <div class="top">
-    <div class="brand">
-      <h1>Inventario semanal PDA - Expedición</h1>
-      <p>Control local de terminales PDA · Sección única: Expedición</p>
-    </div>
-    <div class="toolbar">
-      <button class="btn secondary" onclick="exportExcel()">Exportar Excel</button>
-      <button class="btn secondary" onclick="window.print()">Exportar PDF</button>
-      <button class="btn secondary" onclick="resetDemo()">Restaurar listado inicial</button>
-    </div>
-  </div>
+  <main class="app-shell">
+    <header class="app-header">
+      <section class="brand-block" aria-label="Cabecera de aplicación">
+        <p class="eyebrow">Control semanal · Almacén</p>
+        <h1>Inventario PDA Expedición</h1>
+        <p class="subtitle">CA001–CA080 · EX001–EX080 · 160 terminales precargados</p>
+      </section>
 
-  <div class="sectionHero">
-    <div>
-      <h2>Expedición</h2>
-      <div class="note">Terminales precargados: CA001 a CA080 y EX001 a EX080</div>
-    </div>
-    <div class="stats">
-      <div class="stat"><b id="total">0</b><span>Total PDA</span></div>
-      <div class="stat"><b id="incidencias">0</b><span>Con incidencias</span></div>
-      <div class="stat"><b id="reparar">0</b><span>Para reparar</span></div>
-      <div class="stat"><b id="nolocalizadas">0</b><span>No localizadas</span></div>
-    </div>
-  </div>
+      <section class="header-actions" aria-label="Acciones principales">
+        <button class="btn btn-light" id="btnExportExcel" type="button">Exportar Excel</button>
+        <button class="btn btn-light" id="btnPrint" type="button">Exportar PDF</button>
+        <button class="btn btn-dark" id="btnReset" type="button">Restaurar inventario</button>
+      </section>
+    </header>
 
-  <div class="filters">
-    <div class="field"><label>Buscar por código PDA</label><input id="search" placeholder="Ej. CA001, EX045..." oninput="render()"></div>
-    <div class="field"><label>Estado operativo</label><select id="filterEstado" onchange="render()">
-<option value="">Todos los estados</option>
-<option value="Operativa">Operativa</option>
-<option value="Operativa con incidencias">Operativa con incidencias</option>
-<option value="No operativa">No operativa</option>
-<option value="En reparación">En reparación</option>
-<option value="No localizada">No localizada</option>
-</select></div>
-    <div class="field"><label>Acción requerida</label><select id="filterAccion" onchange="render()">
-<option value="">Todas las acciones</option>
-<option value="Ninguna">Ninguna</option>
-<option value="Revisar">Revisar</option>
-<option value="Reparar">Reparar</option>
-<option value="Sustituir batería">Sustituir batería</option>
-<option value="Sustituir terminal">Sustituir terminal</option>
-<option value="Baja">Baja</option>
-</select></div>
-    <div class="field"><label>Vista rápida</label><select id="filterVista" onchange="render()"><option value="todas">Todas</option><option value="incidencias">PDA con incidencias</option><option value="nolocalizadas">No localizadas</option><option value="reparar">Para reparar</option></select></div>
-    <button class="btn secondary" onclick="clearFilters()">Limpiar filtros</button>
-  </div>
+    <section class="summary-grid" aria-label="Resumen del inventario">
+      <article class="summary-card">
+        <span class="summary-label">Total PDA</span>
+        <strong id="statTotal">0</strong>
+      </article>
+      <article class="summary-card is-ok">
+        <span class="summary-label">Operativas</span>
+        <strong id="statOperativas">0</strong>
+      </article>
+      <article class="summary-card is-warning">
+        <span class="summary-label">Con incidencias</span>
+        <strong id="statIncidencias">0</strong>
+      </article>
+      <article class="summary-card is-danger">
+        <span class="summary-label">Reparación</span>
+        <strong id="statReparacion">0</strong>
+      </article>
+      <article class="summary-card is-muted">
+        <span class="summary-label">No localizadas</span>
+        <strong id="statNoLocalizadas">0</strong>
+      </article>
+    </section>
 
-  <div class="layout">
-    <div class="panel">
-      <div class="panelTitle">
-        <h3>Listado de PDA de Expedición</h3>
-        <div class="views">
-          <button class="btn secondary" onclick="setVista('todas')">Todas</button>
-          <button class="btn secondary" onclick="setVista('incidencias')">Incidencias</button>
-          <button class="btn secondary" onclick="setVista('nolocalizadas')">No localizadas</button>
-          <button class="btn secondary" onclick="setVista('reparar')">Reparar</button>
+    <section class="workspace">
+      <section class="list-panel" aria-label="Listado de terminales PDA">
+        <div class="panel-head">
+          <div>
+            <h2>Listado de Expedición</h2>
+            <p id="resultCount">Mostrando 0 terminales</p>
+          </div>
+          <div class="quick-tabs" role="group" aria-label="Filtros rápidos">
+            <button class="tab is-active" type="button" data-view="todas">Todas</button>
+            <button class="tab" type="button" data-view="incidencias">Incidencias</button>
+            <button class="tab" type="button" data-view="reparar">Reparar</button>
+            <button class="tab" type="button" data-view="nolocalizadas">No localizadas</button>
+          </div>
         </div>
-      </div>
-      <div class="tableWrap">
-        <table id="tabla">
-          <thead><tr><th>Código</th><th>Estado</th><th>Incidencias</th><th>Acción</th><th>Última revisión</th><th>Revisado por</th><th>Observaciones</th></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-        <div id="empty" class="empty hidden">No hay PDA que coincidan con el filtro seleccionado.</div>
-      </div>
-    </div>
 
-    <div class="panel editor">
-      <div class="panelTitle" style="padding:0 0 12px;border-bottom:0"><h3>Edición rápida</h3><span class="note" id="selectedHint">Selecciona una PDA</span></div>
-      <div class="editorGrid">
-        <div class="field"><label>Código PDA</label><input id="codigo" readonly></div>
-        <div class="field"><label>Sección</label><input id="seccion" value="Expedición" readonly></div>
-        <div class="field full"><label>Estado operativo</label><select id="estado">
-<option value="Operativa">Operativa</option>
-<option value="Operativa con incidencias">Operativa con incidencias</option>
-<option value="No operativa">No operativa</option>
-<option value="En reparación">En reparación</option>
-<option value="No localizada">No localizada</option>
-</select></div>
-        <div class="field full"><label>Incidencias detectadas</label><div id="incChecklist" class="checklist">
-<label class="checkitem"><input type="checkbox" value="No enciende">No enciende</label>
-<label class="checkitem"><input type="checkbox" value="No carga">No carga</label>
-<label class="checkitem"><input type="checkbox" value="No tiene conexión">No tiene conexión</label>
-<label class="checkitem"><input type="checkbox" value="No conecta con AS400">No conecta con AS400</label>
-<label class="checkitem"><input type="checkbox" value="Pantalla rota">Pantalla rota</label>
-<label class="checkitem"><input type="checkbox" value="Botones dañados">Botones dañados</label>
-<label class="checkitem"><input type="checkbox" value="Batería defectuosa">Batería defectuosa</label>
-<label class="checkitem"><input type="checkbox" value="Lector código barras no funciona">Lector código barras no funciona</label>
-<label class="checkitem"><input type="checkbox" value="Golpes o carcasa rota">Golpes o carcasa rota</label>
-<label class="checkitem"><input type="checkbox" value="Carcasa protectora perdida">Carcasa protectora perdida</label>
-<label class="checkitem"><input type="checkbox" value="Base de carga defectuosa">Base de carga defectuosa</label>
-<label class="checkitem"><input type="checkbox" value="Otro">Otro</label>
-</div></div>
-        <div class="field full"><label>Acción requerida</label><select id="accion">
-<option value="Ninguna">Ninguna</option>
-<option value="Revisar">Revisar</option>
-<option value="Reparar">Reparar</option>
-<option value="Sustituir batería">Sustituir batería</option>
-<option value="Sustituir terminal">Sustituir terminal</option>
-<option value="Baja">Baja</option>
-</select></div>
-        <div class="field"><label>Fecha última revisión</label><input id="fecha" type="date"></div>
-        <div class="field"><label>Revisado por</label><input id="revisadoPor" placeholder="Nombre"></div>
-        <div class="field full"><label>Observaciones</label><textarea id="observaciones" placeholder="Añadir observaciones..."></textarea></div>
-      </div>
-      <div class="editorActions">
-        <button class="btn ok" onclick="saveSelected()">Guardar cambios</button>
-        <button class="btn secondary" onclick="markOperativa()">Marcar operativa</button>
-        <button class="btn secondary" onclick="clearIncidencias()">Limpiar incidencias</button>
-      </div>
-      <p class="note">Los datos se guardan automáticamente en este ordenador mediante almacenamiento local del navegador.</p>
-    </div>
-  </div>
-</div>
-<script src="js/app.js"></script>
+        <div class="filters-bar">
+          <label class="field field-search">
+            <span>Buscar PDA</span>
+            <input id="searchInput" type="search" placeholder="Ej. CA001 o EX050" autocomplete="off">
+          </label>
+
+          <label class="field">
+            <span>Estado</span>
+            <select id="filterEstado">
+              <option value="">Todos</option>
+              <option value="Operativa">Operativa</option>
+              <option value="Operativa con incidencias">Operativa con incidencias</option>
+              <option value="No operativa">No operativa</option>
+              <option value="En reparación">En reparación</option>
+              <option value="No localizada">No localizada</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Acción</span>
+            <select id="filterAccion">
+              <option value="">Todas</option>
+              <option value="Ninguna">Ninguna</option>
+              <option value="Revisar">Revisar</option>
+              <option value="Reparar">Reparar</option>
+              <option value="Sustituir batería">Sustituir batería</option>
+              <option value="Sustituir terminal">Sustituir terminal</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </label>
+
+          <button class="btn btn-light btn-compact" id="btnClearFilters" type="button">Limpiar</button>
+        </div>
+
+        <div class="table-shell">
+          <table class="pda-table" aria-describedby="resultCount">
+            <thead>
+              <tr>
+                <th data-sort="codigo">Código</th>
+                <th data-sort="estado">Estado</th>
+                <th>Incidencias</th>
+                <th data-sort="accion">Acción</th>
+                <th data-sort="fecha">Última revisión</th>
+                <th>Revisado por</th>
+              </tr>
+            </thead>
+            <tbody id="pdaTableBody"></tbody>
+          </table>
+          <div class="empty-state hidden" id="emptyState">No hay PDA que coincidan con los filtros seleccionados.</div>
+        </div>
+      </section>
+
+      <aside class="edit-panel" aria-label="Edición rápida de PDA">
+        <div class="edit-head">
+          <div>
+            <p class="eyebrow">Edición rápida</p>
+            <h2 id="selectedTitle">Selecciona una PDA</h2>
+          </div>
+          <span class="status-pill" id="selectedStatus">Sin selección</span>
+        </div>
+
+        <form id="editForm" autocomplete="off">
+          <div class="form-grid">
+            <label class="field">
+              <span>Código PDA</span>
+              <input id="codigo" type="text" readonly>
+            </label>
+
+            <label class="field">
+              <span>Sección</span>
+              <input id="seccion" type="text" value="Expedición" readonly>
+            </label>
+
+            <label class="field full">
+              <span>Estado operativo</span>
+              <select id="estado">
+                <option value="Operativa">Operativa</option>
+                <option value="Operativa con incidencias">Operativa con incidencias</option>
+                <option value="No operativa">No operativa</option>
+                <option value="En reparación">En reparación</option>
+                <option value="No localizada">No localizada</option>
+              </select>
+            </label>
+
+            <fieldset class="incidence-box full">
+              <legend>Incidencias detectadas</legend>
+              <label><input type="checkbox" value="No enciende"> No enciende</label>
+              <label><input type="checkbox" value="No carga"> No carga</label>
+              <label><input type="checkbox" value="No tiene conexión"> No tiene conexión</label>
+              <label><input type="checkbox" value="No conecta con AS400"> No conecta con AS400</label>
+              <label><input type="checkbox" value="Pantalla rota"> Pantalla rota</label>
+              <label><input type="checkbox" value="Botones dañados"> Botones dañados</label>
+              <label><input type="checkbox" value="Batería defectuosa"> Batería defectuosa</label>
+              <label><input type="checkbox" value="Lector código de barras averiado"> Lector código de barras averiado</label>
+              <label><input type="checkbox" value="Golpes o carcasa rota"> Golpes o carcasa rota</label>
+              <label><input type="checkbox" value="Carcasa protectora perdida"> Carcasa protectora perdida</label>
+              <label><input type="checkbox" value="Base de carga defectuosa"> Base de carga defectuosa</label>
+              <label><input type="checkbox" value="No contiene aplicaciones"> No contiene aplicaciones</label>
+              <label><input type="checkbox" value="Otro"> Otro</label>
+            </fieldset>
+
+            <label class="field full">
+              <span>Acción requerida</span>
+              <select id="accion">
+                <option value="Ninguna">Ninguna</option>
+                <option value="Revisar">Revisar</option>
+                <option value="Reparar">Reparar</option>
+                <option value="Sustituir batería">Sustituir batería</option>
+                <option value="Sustituir terminal">Sustituir terminal</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Fecha última revisión</span>
+              <input id="fecha" type="date">
+            </label>
+
+            <label class="field">
+              <span>Revisado por</span>
+              <input id="revisadoPor" type="text" placeholder="Nombre del operario">
+            </label>
+
+            <label class="field full">
+              <span>Observaciones</span>
+              <textarea id="observaciones" placeholder="Añadir observaciones relevantes del inventario..."></textarea>
+            </label>
+          </div>
+        </form>
+
+        <div class="edit-actions">
+          <button class="btn btn-dark" id="btnSave" type="button">Guardar cambios</button>
+          <button class="btn btn-ok" id="btnMarkOk" type="button">Marcar operativa</button>
+          <button class="btn btn-light" id="btnClearIncidences" type="button">Limpiar incidencias</button>
+        </div>
+
+        <p class="storage-note">Guardado local automático en este navegador. Compatible con GitHub Pages.</p>
+      </aside>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
 </body>
 </html>
-
-
-
-
