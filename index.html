@@ -4,42 +4,53 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111111">
+
   <title>Inventario PDA Expedición</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
   <main class="app-shell">
     <header class="app-header">
-      <section class="brand-block" aria-label="Cabecera de aplicación">
+      <section class="brand-block">
         <p class="eyebrow">Control semanal · Almacén</p>
         <h1>Inventario PDA Expedición</h1>
         <p class="subtitle">CA001–CA080 · EX001–EX080 · 160 terminales precargados</p>
       </section>
 
-      <section class="header-actions" aria-label="Acciones principales">
+      <section class="header-actions">
         <button class="btn btn-light" id="btnExportExcel" type="button">Exportar Excel</button>
         <button class="btn btn-light" id="btnPrint" type="button">Exportar PDF</button>
         <button class="btn btn-dark" id="btnReset" type="button">Restaurar inventario</button>
       </section>
     </header>
 
-    <section class="summary-grid" aria-label="Resumen del inventario">
+    <section class="summary-grid">
       <article class="summary-card">
         <span class="summary-label">Total PDA</span>
         <strong id="statTotal">0</strong>
       </article>
+
       <article class="summary-card is-ok">
         <span class="summary-label">Operativas</span>
         <strong id="statOperativas">0</strong>
       </article>
+
       <article class="summary-card is-warning">
         <span class="summary-label">Con incidencias</span>
         <strong id="statIncidencias">0</strong>
       </article>
+
       <article class="summary-card is-danger">
         <span class="summary-label">Reparación</span>
         <strong id="statReparacion">0</strong>
       </article>
+
       <article class="summary-card is-muted">
         <span class="summary-label">No localizadas</span>
         <strong id="statNoLocalizadas">0</strong>
@@ -47,13 +58,14 @@
     </section>
 
     <section class="workspace">
-      <section class="list-panel" aria-label="Listado de terminales PDA">
+      <section class="list-panel">
         <div class="panel-head">
           <div>
             <h2>Listado de Expedición</h2>
             <p id="resultCount">Mostrando 0 terminales</p>
           </div>
-          <div class="quick-tabs" role="group" aria-label="Filtros rápidos">
+
+          <div class="quick-tabs">
             <button class="tab is-active" type="button" data-view="todas">Todas</button>
             <button class="tab" type="button" data-view="incidencias">Incidencias</button>
             <button class="tab" type="button" data-view="reparar">Reparar</button>
@@ -96,7 +108,7 @@
         </div>
 
         <div class="table-shell">
-          <table class="pda-table" aria-describedby="resultCount">
+          <table class="pda-table">
             <thead>
               <tr>
                 <th data-sort="codigo">Código</th>
@@ -109,16 +121,20 @@
             </thead>
             <tbody id="pdaTableBody"></tbody>
           </table>
-          <div class="empty-state hidden" id="emptyState">No hay PDA que coincidan con los filtros seleccionados.</div>
+
+          <div class="empty-state hidden" id="emptyState">
+            No hay PDA que coincidan con los filtros seleccionados.
+          </div>
         </div>
       </section>
 
-      <aside class="edit-panel" aria-label="Edición rápida de PDA">
+      <aside class="edit-panel">
         <div class="edit-head">
           <div>
             <p class="eyebrow">Edición rápida</p>
             <h2 id="selectedTitle">Selecciona una PDA</h2>
           </div>
+
           <span class="status-pill" id="selectedStatus">Sin selección</span>
         </div>
 
@@ -147,6 +163,7 @@
 
             <fieldset class="incidence-box full">
               <legend>Incidencias detectadas</legend>
+
               <label><input type="checkbox" value="No enciende"> No enciende</label>
               <label><input type="checkbox" value="No carga"> No carga</label>
               <label><input type="checkbox" value="No tiene conexión"> No tiene conexión</label>
@@ -197,11 +214,24 @@
           <button class="btn btn-light" id="btnClearIncidences" type="button">Limpiar incidencias</button>
         </div>
 
-        <p class="storage-note">Guardado local automático en este navegador. Compatible con GitHub Pages.</p>
+        <p class="storage-note">
+          Guardado local automático en este navegador. Compatible con GitHub Pages.
+        </p>
       </aside>
     </section>
   </main>
 
   <script src="js/app.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./service-worker.js")
+          .catch(function (error) {
+            console.warn("No se pudo registrar el Service Worker:", error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
